@@ -5,69 +5,43 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <title>APAKAH KAMU INGIN BERTEMAN DENGAN AKU?</title>
     <style>
-        body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            background-color: #f9e3e3;
-            font-family: 'Arial', sans-serif;
-            flex-direction: column;
+        body{
+            display:flex;justify-content:center;align-items:center;
+            height:100vh;margin:0;background:#f9e3e3;
+            font-family:Arial,Helvetica,sans-serif;flex-direction:column;
         }
-
-        .container {
-            text-align: center;
+        .container{text-align:center;}
+        h1,.header_text{font-size:2.5em;color:#d32f2f;}
+        .buttons{margin-top:20px;}
+        .yes-button,.no-button{
+            font-size:1.5em;padding:10px 20px;border:none;
+            border-radius:5px;cursor:pointer;color:#fff;
         }
-
-        h1, .header_text {
-            font-size: 2.5em;
-            color: #d32f2f;
+        .yes-button{background:#4caf50;margin-right:10px;}
+        .no-button{background:#f44336;}
+        .gif_container img{
+            max-width:100%;height:auto;border-radius:10px;margin-top:20px;
         }
+        #yesPage{display:none;}
+        #mainPage.active,#yesPage.active{display:block;}
+        #mainPage.inactive,#yesPage.inactive{display:none;}
 
-        .buttons {
-            margin-top: 20px;
-        }
-
-        .yes-button, .no-button {
-            font-size: 1.5em;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            color: white;
-        }
-
-        .yes-button {
-            background-color: #4caf50;
-            margin-right: 10px;
-        }
-
-        .no-button {
-            background-color: #f44336;
-        }
-
-        .gif_container img {
-            max-width: 100%;
-            height: auto;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-
-        #yesPage {
-            display: none;
-        }
-
-        #mainPage.active, #yesPage.active {
-            display: block;
-        }
-
-        #mainPage.inactive, #yesPage.inactive {
-            display: none;
+        /* Tombol musik */
+        #musicToggle{
+            position:fixed;bottom:20px;right:20px;
+            padding:10px 14px;font-size:.9em;
+            border:none;border-radius:50px;
+            background:#d32f2f;color:#fff;cursor:pointer;
+            box-shadow:0 2px 6px rgba(0,0,0,.2);
         }
     </style>
 </head>
 <body>
+    <!-- ===== BACKGROUND MUSIC ===== -->
+    <audio id="bgMusic" src="https://dl.ymcdn.org/67d409ae3ee958cceb8ca7a6beb7d2cc/purdUs68Tmc" preload="auto" autoplay loop muted></audio>
+    <button id="musicToggle">⏸️</button>
+
+    <!-- ===== HALAMAN UTAMA ===== -->
     <div id="mainPage" class="container active">
         <h1>APAKAH KAMU INGIN BERTEMAN DENGAN AKU?</h1>
         <div class="buttons">
@@ -79,6 +53,7 @@
         </div>
     </div>
 
+    <!-- ===== HALAMAN YES ===== -->
     <div id="yesPage" class="container inactive">
         <h1 class="header_text">HAHAHAHAHAHHA</h1>
         <div class="gif_container">
@@ -87,51 +62,79 @@
     </div>
 
     <script>
-        const messages = [
-            "YANG BENER?",
-            "BENERAN NIH??",
-            "SERIUSS???",
-            "AYOLAHH...",
-            "PIKIRKAN LAGIII",
-            "KALO PILIH ENGGA LAGI AKU AKAN NANGIS...",
-            "AKU BENERAN AKAN NANGIS...",
-            "AKU BENER-BENER AKAN MENANGIS SEKARANGG...",
-            "OK FINEE...",
-            "BERCANDAA HAHAHAHA, PENCET MAU YAA! ❤️"
-        ];
+        /* ========== MUSIK ========== */
+        const bgMusic = document.getElementById('bgMusic');
+        const musicBtn = document.getElementById('musicToggle');
 
-        let messageIndex = 0;
+        // Ketika file siap diputar, lepaskan mute dan naikkan volume pelan‑pelan
+        bgMusic.addEventListener('canplay', () => {
+            // Delay kecil biar lebih halus
+            setTimeout(() => {
+                bgMusic.muted = false;
+                let v = 0;
+                const fade = setInterval(() => {
+                    v += 0.05;
+                    bgMusic.volume = Math.min(v, 0.5);   // target volume 0.5
+                    if (v >= 0.5) clearInterval(fade);
+                }, 200);
+            }, 300);
+        });
 
-        function handleNoClick() {
-            const noButton = document.querySelector('.no-button');
-            const yesButton = document.querySelector('.yes-button');
-            noButton.textContent = messages[messageIndex];
-            messageIndex = (messageIndex + 1) % messages.length;
-            const currentSize = parseFloat(window.getComputedStyle(yesButton).fontSize);
-            yesButton.style.fontSize = `${currentSize * 1.5}px`;
-        }
+        // Coba paksa play (beberapa browser masih butuh interaksi)
+        window.addEventListener('load', () => {
+            bgMusic.play().catch(() => {
+                // Autoplay diblok — ganti ikon jadi ▶️
+                musicBtn.textContent = '▶️';
+            });
+        });
 
-        function handleYesClick() {
-            document.getElementById('mainPage').classList.remove('active');
-            document.getElementById('mainPage').classList.add('inactive');
-            document.getElementById('yesPage').classList.remove('inactive');
-            document.getElementById('yesPage').classList.add('active');
-        }
-
-        // Optional: Check for updates
-        (async function checkForUpdates() {
-            const currentVersion = "1.0";
-            const versionUrl = "https://raw.githubusercontent.com/ivysone/Will-you-be-my-Valentine-/main/version.json";
-            try {
-                const response = await fetch(versionUrl);
-                if (!response.ok) return;
-                const data = await response.json();
-                if (currentVersion !== data.version) {
-                    alert(data.updateMessage || "Update available!");
-                }
-            } catch (err) {
-                console.warn("Update check failed.");
+        // Tombol play/pause
+        musicBtn.addEventListener('click', () => {
+            if (bgMusic.paused) {
+                bgMusic.play();
+                musicBtn.textContent = '⏸️';
+            } else {
+                bgMusic.pause();
+                musicBtn.textContent = '▶️';
             }
+        });
+
+        /* === LOGIKA TOMBOL MAU/ENGGA === */
+        const messages = [
+            "YANG BENER?","BENERAN NIH??","SERIUSS???",
+            "AYOLAHH...","PIKIRKAN LAGIII",
+            "KALO PILIH ENGGA LAGI AKU AKAN NANGIS...",
+            "AKU BENERAN AKAN NANGIS...","AKU BENER-BENER AKAN MENANGIS SEKARANGG...",
+            "OK FINEE...","BERCANDAA HAHAHAHA, PENCET MAU YAA! ❤️"
+        ];
+        let idx = 0;
+
+        function handleNoClick(){
+            const noBtn=document.querySelector('.no-button');
+            const yesBtn=document.querySelector('.yes-button');
+            noBtn.textContent = messages[idx];
+            idx = (idx+1)%messages.length;
+            const size=parseFloat(getComputedStyle(yesBtn).fontSize);
+            yesBtn.style.fontSize = `${size*1.5}px`;
+        }
+
+        function handleYesClick(){
+            document.getElementById('mainPage').classList.replace('active','inactive');
+            document.getElementById('yesPage').classList.replace('inactive','active');
+        }
+
+        /* === OPSIONAL: CEK UPDATE === */
+        (async function checkForUpdates(){
+            const currentVersion="1.0";
+            const url="https://raw.githubusercontent.com/ivysone/Will-you-be-my-Valentine-/main/version.json";
+            try{
+                const r=await fetch(url);
+                if(!r.ok)return;
+                const d=await r.json();
+                if(currentVersion!==d.version){
+                    alert(d.updateMessage||"Update available!");
+                }
+            }catch{}
         })();
     </script>
 </body>
